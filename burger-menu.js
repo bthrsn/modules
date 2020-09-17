@@ -57,7 +57,7 @@ function createBurgerMenu(burgerBtn) {
       burgerBtn.classList.remove("active");
     }
   });
-}
+};
 
 export default createBurgerMenu;
 

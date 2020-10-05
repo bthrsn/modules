@@ -1,17 +1,12 @@
 import { event } from "jquery";
+import checkNumInputs from './checkNumInputs';
 
-const forms = () => {
+const forms = (state) => {
 
   const form = document.querySelectorAll('form'),
-        inputs = document.querySelectorAll('input'),
-        phoneInputs = document.querySelectorAll('input[name="user_phone"]');
+        inputs = document.querySelectorAll('input');
 
-  // Проверка на не числа в номере телефона и их моментальное удаление 
-  phoneInputs.forEach(input => {
-    input.addEventListener('input', () => {
-      input.value = input.value.replace(/\D/, '');
-    });
-  });
+  checkNumInputs('input[name="user_phone"]');
 
   const message = {
     loading: 'Загрузка...',
@@ -43,6 +38,11 @@ const forms = () => {
       item.appendChild(statusMessage);
 
       const formData = new FormData(item);
+      if (item.getAttribute('data-calc') === 'end') {
+        for (let key in state) {
+          formData.append(key, state[key]);
+        }
+      }
 
       // Перевод в формат json
       // const json = JSON.stringify(Object.fromEntries(formData.entries()));
@@ -57,7 +57,7 @@ const forms = () => {
           clearInputs();
           setTimeout(() => {
             statusMessage.remove()
-          }, 8000);
+          }, 6000);
         });
     });
   });

@@ -1,66 +1,53 @@
-    // Задача, сделать ТАЙМЕР
+import addZero from './addZero';
 
-function timer(id, deadline) {
+const timer = (timerSelector, deadline) => {
 
-    const getTimeRemaining = (endtime) => {
-      // делаем тех переменную, в которой будет количество оставшихся миллисекунд
-      const t = Date.parse(endtime) - Date.parse(new Date()),
-        // Переменные в которые помещаем остаток времени
-        days = Math.floor(t / (1000 * 60 * 60 * 24)),
-        hours = Math.floor((t / (1000 * 60 * 60) % 24)),
-        minutes = Math.floor((t / 1000 / 60) % 60),
-        seconds = Math.floor((t / 1000) % 60);
-  
-      // Но возвращаем мы объект с данными
-      return {
-        'total': t,
-        days,
-        hours,
-        minutes,
-        seconds
+  const getTimeRemaining = (endtime) => {
+    const t = Date.parse(endtime) - Date.parse(new Date()),
+      days = Math.floor(t / (1000 * 60 * 60 * 24)),
+      hours = Math.floor((t / (1000 * 60 * 60) % 24)),
+      minutes = Math.floor((t / 1000 / 60) % 60),
+      seconds = Math.floor((t / 1000) % 60);
+
+    return {
+      'total': t,
+      days,
+      hours,
+      minutes,
+      seconds
+    }
+  }
+
+  const setClock = (selector, endtime) => {
+    const timer = document.querySelector(selector),
+          days = timer.querySelector('#days'),
+          hours = timer.querySelector('#hours'),
+          minutes = timer.querySelector('#minutes'),
+          seconds = timer.querySelector('#seconds'),
+          timeInterval = setInterval(updateClock, 1000);
+          
+    updateClock();
+
+    function updateClock() {
+      const t = getTimeRemaining(endtime);
+
+      days.textContent = addZero(t.days);
+      hours.textContent = addZero(t.hours);
+      minutes.textContent = addZero(t.minutes);
+      seconds.textContent = addZero(t.seconds);
+
+      if (t.total <= 0) {
+        days.textContent = '00';
+        hours.textContent = '00';
+        minutes.textContent = '00';
+        seconds.textContent = '00';
+
+        clearInterval(timeInterval);
       }
     }
-    // Функция добавления нуля
-    function getZero(num) {
-      if (num >= 0 && num < 10) {
-        return `0${num}`
-      } else {
-        return num
-      }
-    }
-    // Функция устанавливает таймер на страницу
-    const setClock = (selector, endtime) => {
-      // берем первый таймер на странице
-      const timer = document.querySelector(selector),
-        days = timer.querySelector('#days'),
-        hours = timer.querySelector('#hours'),
-        minutes = timer.querySelector('#minutes'),
-        seconds = timer.querySelector('#seconds');
-  
-      // внутри функция обновляет часы
-      const updateClock = () => {
-        // Сколько осталось времени до дедлайна
-        const t = getTimeRemaining(endtime);
-  
-        // Выводим полученные значения на страницу
-        days.innerHTML = getZero(t.days);
-        hours.innerHTML = getZero(t.hours);
-        minutes.innerHTML = getZero(t.minutes);
-        seconds.innerHTML = getZero(t.seconds);
-  
-        // Останавливаем таймер
-        if (t.total <= 0) {
-          clearInterval(timeInterval)
-        }
-      }
-      // Запускаем обновление времени каждую секунду
-      const timeInterval = setInterval(updateClock, 1000);
-      // Вызов функции, чтобы не было моргания верстки через 1 секунду
-      updateClock();
-    }
-  
-    setClock(id, deadline);
-  
-}
+  };
+
+  setClock(timerSelector, deadline);
+};
 
 export default timer;

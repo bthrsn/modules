@@ -1,62 +1,88 @@
-  // функция для закрытия окна, так как она повторяется, а нужно следовать DRY = dont repeat yorself
-  function closeModal(modalSelector) {
-    const modal = document.querySelector(modalSelector);
-    modal.classList.add('hide');
-    modal.classList.remove('show');
-    document.body.style.overflow = ''
-  }
+// Алгоритм
+// 1. создать функцию для вызова модального окна с двумя аргументами: какая кнопка и какое модальное окно
+// обработчик события на кнопку
+// функция открытия - добавить дисплей блок к модальному окну
+// обработчик события на кнопку закрыть или на подложку
+// функция закрытия модального окна - дисплей none
+// импорт и экспорт функций 3 раза (3 разных кнопки, 2 окна)
 
-  function openModal(modalSelector, modalTimerId) {
-    const modal = document.querySelector(modalSelector);
-    modal.classList.remove('hide');
-    modal.classList.add('show');
-    document.body.style.overflow = 'hidden';
-    // Если пользователь уже открыл окно, оно не будет открываться снова через указанное время
-    // Сделаем условие запуска, только если задан этот аргумент
-    if (modalTimerId) {
-      clearInterval(modalTimerId);
-    }
-  }
+const modals = () => {
 
-// Задача, сделать МОДАЛЬНОЕ ОКНО
+  function closeModal(modalWindow) {
+    const modal = document.querySelector(modalWindow),
+          windows = document.querySelectorAll('[data-modal]');
 
-function modal(triggerSelector, modalSelector, modalTimerId) {
-  // Делаем через дата атрибуты
-  const modal = document.querySelector(modalSelector),
-        modalOpenBtn = document.querySelectorAll(triggerSelector);
+    windows.forEach(window => window.style.display = 'none');
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+    document.body.style.marginRight = '0px';
+  };
 
-  modalOpenBtn.forEach(item => {
-    // Чтобы не вызвать функцию сразу при загрузке страницы - оборачиваем ее в другую колбэк функцию
-    item.addEventListener('click', () => openModal(modalSelector, modalTimerId));
+  function bindModal(modalWindow, modalOpenSelector, modalCloseSelector, closeClickOverlay = true) {
+    const modal = document.querySelector(modalWindow),
+          modalOpenBtn = document.querySelectorAll(modalOpenSelector),
+          modalCloseBtn = document.querySelector(modalCloseSelector),
+          windows = document.querySelectorAll('[data-modal]'),
+          scroll = calcScroll();
+    
+    modalOpenBtn.forEach(button => {
+      button.addEventListener('click', (e) => {
+        if (e.target) {
+          e.preventDefault();
+        }
+      // Функционал, чтобы закрывать все окна при открытии друого окна
+      windows.forEach(window => window.style.display = 'none');
+      modal.style.display = 'block';
+      document.body.style.overflow = 'hidden';
+      document.body.style.marginRight = `${scroll}px`;
+    });
   });
 
-  // Остановим показ модального окна после первой прокрутки
-  const showModalByScroll = () => {
-    if (window.pageYOffset + document.documentElement.clientHeight >= document.documentElement.scrollHeight) {
-      openModal(modalSelector, modalTimerId);
-      window.removeEventListener('scroll', showModalByScroll);  
-    }
+    modalCloseBtn.addEventListener('click', () => {
+      closeModal(modalWindow);
+    });
+
+    // Закрытие окна при клике на подложку
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal && closeClickOverlay) {
+        closeModal(modalWindow);
+      }
+    });
+  };
+
+  function showModalByTime(selector, time) {
+      setTimeout(() => {
+        document.querySelector(selector).style.display = 'block';
+        document.body.style.overflow = 'hidden';  
+      }, time);
   }
-  
-  // Вызываем модальное окно если пользователь проскролил страницу до конца
-  window.addEventListener('scroll', showModalByScroll);
-  
-  // Если кликаем вне окна - оно закрывается
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal || e.target.getAttribute('data-close') == '') {
-      closeModal(modalSelector);
-    }
-  });
 
-  // Закрываем окно на клавишу esc
-  document.addEventListener('keydown', (e) => {
-    if (e.code === 'Escape' && modal.classList.contains('show')) {
-      closeModal(modalSelector);
-    }
-  });
+// Функция, чтобы скролл не прыгал при открытии модального окна
+  function calcScroll() {
+    let div = document.createElement('div');
 
+    // Задаем размеры, чтобы блок занимал какое-то место на странице
+    div.style.width = '50px';
+    div.style.height = '50px';
+    div.style.overflowY = 'scroll';
+    div.style.visibility = 'hidden';
+
+    document.body.append(div);
+    // Вычисление размера прокрутки программно, так как размеры экрана у всех разные
+    let scrollWidth = div.offsetWidth - div.clientWidth;
+    div.remove();
+
+    return scrollWidth;
+  }
+
+  bindModal('.popup_engineer', '.popup_engineer_btn', '.popup_engineer_close');
+  bindModal('.popup', '.phone_link', '.popup_close');
+  bindModal('.popup_calc', '.popup_calc_btn','.popup_calc_close');
+  bindModal('.popup_calc_profile', '.popup_calc_button', '.popup_calc_profile_close', false);
+  bindModal('.popup_calc_end', '.popup_calc_profile_button', '.popup_calc_end_close', false);
+
+  showModalByTime('.popup', 60000);
 
 }
+export default modals;
 
-export default modal;
-export {closeModal, openModal};
